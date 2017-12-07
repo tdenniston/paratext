@@ -47,7 +47,7 @@ namespace CSV {
     /*
       Constructs an uninitialized header parser.
      */
-    HeaderParser() : length_(0), end_of_header_(0), has_header_(false) {}
+    HeaderParser() : length_(0), end_of_header_(0), has_header_(false), field_delimiter_(default_field_delimiter_) {}
 
     /*
       Destroys this parser.
@@ -170,7 +170,7 @@ namespace CSV {
                 i++;
                 break;
               }
-              else if (buf[i] == ',') {
+              else if (buf[i] == field_delimiter_) {
                 add_column_name(token);
                 token.clear();
               }              
@@ -231,12 +231,21 @@ namespace CSV {
       return has_header_;
     }
 
+    /*
+      Sets the character that separates header fields.
+    */
+    void set_field_delimiter(char c) {
+      field_delimiter_ = c;
+    }
+
   private:
+    const char default_field_delimiter_ = ',';
     std::ifstream in_;
     std::vector<std::string> column_names_;
     size_t length_;
     size_t end_of_header_;
     bool has_header_;
+    char field_delimiter_;
   };
 }
 }

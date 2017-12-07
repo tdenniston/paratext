@@ -43,7 +43,7 @@ namespace CSV {
 template <class ColumnHandler>
 class ColBasedParseWorker {
 public:
-  ColBasedParseWorker(std::vector<std::shared_ptr<ColumnHandler> > &handlers) : handlers_(handlers), lines_parsed_(0), quote_started_('\0'), column_index_(0), escape_jump_(0) {}
+  ColBasedParseWorker(std::vector<std::shared_ptr<ColumnHandler> > &handlers) : handlers_(handlers), lines_parsed_(0), quote_started_('\0'), column_index_(0), escape_jump_(0), field_delimiter_(default_field_delimiter_) {}
 
   virtual ~ColBasedParseWorker() {}
 
@@ -118,7 +118,7 @@ public:
       if (NumberOnly) {
         size_t i = 0;
         for (; i < nread; i++) {
-          if (buf[i] == ',') {
+          if (buf[i] == field_delimiter_) {
             process_token_number_only();
           }
           else if (buf[i] == '\r') { /* do nothing. */}
@@ -174,7 +174,7 @@ public:
                 definitely_string_ = true;
                 break;
               }
-              else if (buf[i] == ',') {
+              else if (buf[i] == field_delimiter_) {
                 process_token();
               }
               else if (buf[i] == '\r') { /* do nothing: dos wastes a byte each line. */ }
@@ -346,7 +346,15 @@ public:
     handlers_[column_index]->convert_to_text();
   }
 
+  /*
+    Sets the character that separates header fields.
+  */
+  void set_field_delimiter(char c) {
+    field_delimiter_ = c;
+  }
+
 private:
+  const char default_field_delimiter_ = ',';
   std::vector<std::shared_ptr<ColumnHandler> > handlers_;
   std::vector<char>                            token_;
   std::vector<char>                            token_aux_;
@@ -362,6 +370,7 @@ private:
   size_t                                       escape_jump_;
   bool                                         convert_null_to_space_;
   std::exception_ptr                           thread_exception_;
+  char                                         field_delimiter_;
 };
 }
 }

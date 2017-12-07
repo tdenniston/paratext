@@ -210,6 +210,7 @@ namespace ParaText {
       Loads a CSV file.
     */
     void       load(const std::string &filename, const ParaText::ParseParams &params) {
+      header_parser_.set_field_delimiter(params.field_delimiter);
       header_parser_.open(filename, params.no_header);
       struct stat fs;
       if (stat(filename.c_str(), &fs) == -1) {
@@ -596,9 +597,11 @@ namespace ParaText {
                   << " end: " << end_of_chunk
                   << " length: " << ((end_of_chunk - start_of_chunk) + 1) << std::endl;
 #endif
-        workers.push_back(std::make_shared<ColBasedParseWorker<ColBasedChunk> >(column_chunks_.back()));
+        auto worker = std::make_shared<ColBasedParseWorker<ColBasedChunk> >(column_chunks_.back());
+        worker->set_field_delimiter(params.field_delimiter);
+        workers.push_back(worker);
         threads.emplace_back(&ColBasedParseWorker<ColBasedChunk>::parse,
-                             workers.back(),
+                             worker,
                              filename,
                              start_of_chunk,
                              end_of_chunk,

@@ -41,7 +41,8 @@ public:
       chunk_end_(chunk_end),
       file_size_(file_size),
       block_size_(block_size),
-      compression_(compression) {}
+      compression_(compression),
+      field_delimiter_(default_field_delimiter_) {}
 
   virtual ~RowBasedParseWorker() {}
 
@@ -110,7 +111,7 @@ public:
           token.push_back(buf[i]);
         }
         else {
-          if (buf[i] == ',' || buf[i] == '\n') {
+          if (buf[i] == field_delimiter_ || buf[i] == '\n') {
             //std::cout << "[" << (int)state << "," << std::string(token.begin(), token.end()) << "]" << std::endl;
             if (state < 2) {
               input.push_back(0);
@@ -210,7 +211,15 @@ public:
     }
   }
   
+  /*
+    Sets the character that separates header fields.
+  */
+  void set_field_delimiter(char c) {
+    field_delimiter_ = c;
+  }
+
 private:
+  const char default_field_delimiter_ = ',';
   size_t chunk_start_;
   size_t chunk_end_;
   size_t file_size_;
@@ -220,6 +229,7 @@ private:
   std::vector<double> maximum_values_;
   std::vector<std::vector<uint8_t> > rows_;
   std::vector<size_t> starting_state_;
+  char field_delimiter_;
 };
 }
 }
