@@ -63,10 +63,9 @@ F parallel_for_each(Iterator first, Iterator last, size_t suggested_num_threads,
   Iterator it = first;
   for (std::size_t thread_id = 0; thread_id < num_threads; ++thread_id) {
     const std::size_t step = elements_thread + (thread_id < excess ? 1 : 0);
-    thread_pool
-        .emplace_back([ it, step, thread_id, f = std::forward<F>(f) ]() {
-            for_each_it(it, it + step, std::bind(f, _1, thread_id));
-        });
+    thread_pool.emplace_back([it, step, thread_id, &f]() {
+      for_each_it(it, it + step, std::bind(std::forward<F>(f), _1, thread_id));
+    });
     it += step;
   }
 
